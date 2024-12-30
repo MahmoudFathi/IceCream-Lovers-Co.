@@ -1,0 +1,171 @@
+DynamoDB Queries
+----------------------------------------------------------------
+aws dynamodb scan --table-name IceCreamOrders
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Ice Cream Lovers!</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #ffe4e1, #f8c8dc);
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    h1 {
+      font-size: 3em;
+      margin: 20px 0;
+      color: #ff6f61;
+    }
+    .buttons {
+      margin: 30px auto;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .button {
+      padding: 15px 30px;
+      font-size: 1.2em;
+      background-color: #ffddc1;
+      border: 2px solid #ff6f61;
+      border-radius: 10px;
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+      box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .button:hover {
+      transform: scale(1.1);
+      box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .button span {
+      font-size: 1.5em;
+    }
+    footer {
+      margin-top: 50px;
+      font-size: 1em;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🍦 Welcome to Ice Cream Lovers! 🍨</h1>
+  </header>
+  <section class="buttons">
+    <a href="https://au7z5fqlfh.execute-api.us-east-1.amazonaws.com/default/z-order-func" class="button">🍧 <span>Order Ice Cream</span></a>
+    <a href="#careers" class="button">💼 <span>Careers</span></a>
+    <a href="https://au7z5fqlfh.execute-api.us-east-1.amazonaws.com/default/z-kot-func" class="button">👩‍🍳 <span>Know Our Team</span></a>
+  </section>
+  <footer>
+    <p>Made with ❤️ for all ice cream enthusiasts!</p>
+  </footer>
+</body>
+</html>
+
+
+
+
+
+Functions
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Function-OICECREAM
+--------------------------------------------------------------------------------------------
+import json
+import boto3
+import uuid
+from datetime import datetime
+
+# Initialize the DynamoDB client
+dynamodb = boto3.client('dynamodb')
+
+# Table name
+TABLE_NAME = 'IceCreamOrders'
+
+def lambda_handler(event, context):
+    try:
+        # Generate a unique order ID
+        order_id = str(uuid.uuid4())
+        
+        # Get the current timestamp
+        order_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        # Insert a new item into DynamoDB
+        dynamodb.put_item(
+            TableName=TABLE_NAME,
+            Item={
+                'OrderID': {'S': order_id},
+                'OrderTime': {'S': order_time}
+            }
+        )
+        
+        # Response
+        return {
+            'statusCode': 200,
+            'body': json.dumps({
+                'message': 'Order successfully recorded!',
+                'OrderID': order_id,
+                'OrderTime': order_time
+            })
+        }
+    except Exception as e:
+        # Handle any errors
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'message': 'Error processing the order', 'error': str(e)})
+        }
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+Function-KOT
+--------------------------------------------------------------------------------------------
+import boto3
+
+# Initialize the SNS client
+sns = boto3.client('sns')
+
+# Define the SNS Topic ARN
+SNS_TOPIC_NAME = "Icecream-Notification"
+
+def lambda_handler(event, context):
+    try:
+        # Your message
+        message = (
+            "Hi Zaky,\n"
+            "One of the customers likes your ice cream and wants to meet up!\n"
+            "Take care!"
+        )
+
+        # Publish the message to the SNS topic
+        response = sns.publish(
+            TopicArn=f"arn:aws:sns:us-east-1:646951459149:Icecream-Notification",
+            Subject="Ice Cream Notification",
+            Message=message,
+        )
+        
+        return {
+            'statusCode': 200,
+            'body': f"Message sent to topic {SNS_TOPIC_NAME}. Message ID: {response['MessageId']}"
+        }
+
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': f"Failed to send message: {str(e)}"
+        }
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

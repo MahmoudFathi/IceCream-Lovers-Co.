@@ -1,0 +1,89 @@
+Procedures
+
+
+1) Create a DynamoDB Table
+
+	a) Name:          z-icecream-db
+	   Partition Key: OrderID
+	   Sort Key: 	  OrderTime
+
+2) Use the Existing SNS Topic (Icecream-Notification) - View it for the Audience
+
+
+3) Create Order Function
+
+	a) Name:     	  z-order-func
+	   Runtime: 	  Python 3.13
+	   Permission:    Use icecream-order-function-role-jucvjlht
+
+	b) Make sure that the dynamoDB table name is updated in function code, then add the code.  
+
+	c) DEPLOY then TEST the function (should return 200 OK)
+
+
+3) Create KOT Function
+
+	a) Name:     	  z-kot-func
+	   Runtime: 	  Python 3.13
+	   Permission:    Use icecream-KOT-Lambda-role-awj8spag
+
+	b) Make sure that the SNS topic name and ARN are updated, then add the code.  
+
+	c) DEPLOY then TEST the function (should return 200 OK) 
+
+	d) Check your Email for the New Notification
+
+
+4) Connect Functions to API Gateway
+
+	a) In z-kot-func Function UI, Add a trigger
+	b) Choose API, Create New API, HTTP API, Security: Open, API name: z-api-gw
+
+	a) In z-order-func Function UI, add a trigger
+	b) Choose API, existing API, choose z-api-gw, HTTP API, Security: Open
+
+	
+5) Update the code with API Urls and save it as fe.html
+
+6) Upload fe.html to the bucket
+
+
+7) Create the S3 Bucket
+	1) name: z-icecream-frontend
+	2) Turn OFF block all public access
+
+
+8) Setting up S3 Bucket
+	
+	1) Set the bucket policy 
+
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicReadGetObject",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::z-icecream-frontend/*"
+        }
+    ]
+}
+	
+	2) Enable Static web hosting with index document fe.html
+
+	3) Set the security by selecting "Block all public access" > option 1 & 3
+	
+	
+
+9) Test
+
+		a) Access the website from S3 Static website URL > Press on Order Ice Cream
+		b) Go to Cloud shell and check the DB order entry #aws dynamodb scan --table-name z-icecream-db
+		a> Check Order Lambda Invocations from Lambda UI
+
+		a) Access the website from S3 Static website URL > Press on Know our team
+		b) Check the mail 
+
+ 
