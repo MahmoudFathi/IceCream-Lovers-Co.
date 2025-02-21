@@ -146,7 +146,7 @@ def lambda_handler(event, context):
     try:
         # Your message
         message = (
-            "Hi Zaky,\n"
+            "Hi Fathi,\n"
             "One of the customers likes your ice cream and wants to meet up!\n"
             "Take care!"
         )
